@@ -62,7 +62,7 @@
     <a id="open-btn" class="btn" href="#">Ouvrir dans Obsidian</a>
   </div>
 
-  <script>
+<script>
     (function () {
       const rawSearch = window.location.search;
       const previewEl = document.getElementById("preview");
@@ -73,23 +73,33 @@
       if (!rawSearch || rawSearch.length < 2) {
         titleEl.textContent = "Aucun paramètre détecté";
         titleEl.classList.add("error");
-        descEl.textContent = "Cette page attend des paramètres Advanced URI (ex. ?vault=...&filepath=...).";
+        descEl.textContent = "Cette page attend des paramètres Advanced URI.";
         previewEl.textContent = "URL vide";
         btnEl.style.display = "none";
         return;
       }
 
       const obsidianUri = "obsidian://advanced-uri" + rawSearch;
-      btnEl.href = obsidianUri;
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const androidIntentUri =
+        "intent://advanced-uri" + rawSearch +
+        "#Intent;scheme=obsidian;package=md.obsidian;end";
+
+      btnEl.href = isAndroid ? androidIntentUri : obsidianUri;
 
       const params = new URLSearchParams(rawSearch);
       const vault = params.get("vault") || "(défaut)";
       const target = params.get("filepath") || params.get("filename") || params.get("commandid") || "(action)";
-      const heading = params.get("heading") ? " - #" + params.get("heading") : "";
+      const heading = params.get("heading") ? " → #" + params.get("heading") : "";
       const mode = params.get("mode") || "open";
-      previewEl.textContent = `Coffre : ${vault}\nCible  : ${target}${heading}\nMode   : ${mode}`;
+      previewEl.textContent = `Coffre : ${vault}\nCible : ${target}${heading}\nMode : ${mode}`;
 
-      window.location.replace(obsidianUri);
+      if (!isAndroid) {
+        window.location.href = obsidianUri;
+      } else {
+        titleEl.textContent = "Prêt pour Obsidian";
+        descEl.textContent = "Appuyez sur le bouton ci-dessous pour ouvrir Obsidian.";
+      }
     })();
   </script>
 </body>
